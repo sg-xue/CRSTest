@@ -7,7 +7,7 @@ import io.appium.java_client.android.AndroidDriver;
 import java.net.MalformedURLException;  
 import java.net.URL;  
 //import java.util.List;  
-//import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeUnit;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebElement;  
@@ -49,30 +49,18 @@ public class loginTest {
     @BeforeMethod  
     public void beforeMethod() throws Exception {  
         System.out.println("beforeMethod");  
-        // switch (driver.currentActivity()) {  
-        // case ".MainActivity":  
-        // mainTest();  
-        // break;  
-        // case ".AnotherActivity":  
-        // anotherTest();  
-        // break;  
-        // }  
     }  
   
     @AfterMethod  
     public void afterMethod() throws Exception {  
         System.out.println("afterMethod");  
+        driver.quit();
     }  
   
     @Test  
-    public void test1() throws Exception {  
+    public void testLogin() throws Exception {  
         System.out.println("mainTest");  
-//        int i;  
-//        for (i = 0; i < 4; i++) {  
-//            // 通过UI界面上的文字获取控件  
-//            driver.findElementByName("按钮").click();  
-//        }  
-        // 通过Id获取控件  
+        // 打开页面 
         driver.findElementById("com.vivo.browser:id/search_text").click();  
         WebElement search_box = driver.findElement(By.id("com.vivo.browser:id/edit"));
         search_box.sendKeys("crs-ui.dianhua.dev");
@@ -80,6 +68,20 @@ public class loginTest {
         driver.findElementById("com.vivo.browser:id/go").click();
         sleep(5);
         
+        //输入号码
+        driver.context("WEBVIEW_com.vivo.browser");
+        WebElement tel_num = driver.findElementById("tel");
+        tel_num.sendKeys("13294396470");
+//        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); 
+        sleep(5);
+        WebElement pin_pwd = driver.findElementById("input_pin_pwd");
+        sleep(5);
+        pin_pwd.sendKeys("074693");
+        sleep(5);
+//        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        driver.findElementById("p1_submit").click();
+        sleep(5);
+//        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 //        driver.switch_to.context("WEBVIEW_com.vivo.browser")
 //                print self.driver.context
 //                sleep(5)
