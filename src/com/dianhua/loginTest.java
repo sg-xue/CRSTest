@@ -10,6 +10,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Set;
 //import java.util.List;  
 import java.util.concurrent.TimeUnit;
 
@@ -72,7 +76,7 @@ public class loginTest {
         
         ExcelUtils excelData;
         
-        // ��ҳ�� 
+        //  
         driver.findElementById("com.vivo.browser:id/search_text").click();  
         WebElement search_box = driver.findElement(By.id("com.vivo.browser:id/edit"));
         search_box.sendKeys("crs-ui.dianhua.dev");
@@ -80,7 +84,7 @@ public class loginTest {
         driver.findElementById("com.vivo.browser:id/go").click();
         sleep(2);
         
-        //�������
+        //
         driver.context("WEBVIEW_com.vivo.browser");
         WebElement tel_num = driver.findElementById("tel");
         int RowNum = 31;
@@ -100,14 +104,16 @@ public class loginTest {
 		}
         ExpectedConditions.elementToBeClickable(driver.findElementById("p1_submit"));
         driver.findElementById("p1_submit").click();
-        driver.context("NATIVE_APP");
-//        sleep(3);
-//        WebElement frame=driver.findElementById("com.vivo.browser:id/parentPanel");
-//        driver.switchTo().frame(frame);
-//        if (driver.findElementById("com.vivo.browser:id/parentPanel") != null) {
-//        	driver.findElementById("com.vivo.browser:id/button1").click();
-//        }
+//        driver.context("NATIVE_APP");
 //        driver.switchTo().defaultContent();
+        sleep(3);
+
+        
+        driver.switchTo().frame("content");
+        if (driver.findElementById("com.vivo.browser:id/parentPanel") != null) {
+        	driver.findElementById("com.vivo.browser:id/button1").click();
+        }
+        
         sleep(20);
         File scrFile = driver.getScreenshotAs(OutputType.FILE);
         try {
@@ -130,16 +136,16 @@ public class loginTest {
 //                sleep(3)
 //                self.driver.switch_to.context("NATIVE_APP")
         
-//        Assert.assertEquals("�������:" + i, result);  
-//        // �ȴ�  
+//        Assert.assertEquals(":" + i, result);  
+//        //  
 //        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);  
-//        // ͨ���ؼ����ͻ�ȡ�ؼ��б�  
+//        //  
 //        List<WebElement> textFieldsList = driver  
 //                .findElementsByClassName("android.widget.EditText");  
 //        textFieldsList.get(0).sendKeys("123456789");  
 //        // driver.findElementById("et").sendKeys("123456789");  
 //        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);  
-//        driver.findElementByName("��ת").click();  
+//        driver.findElementByName("锟斤拷转").click();  
     }  
   
 //    @Test  
@@ -147,7 +153,7 @@ public class loginTest {
 //        System.out.println("anotherTest");  
 //        String result = driver.findElementById("another_tv").getText();  
 //        //Assert.assertEquals("1234567890", result);  
-//        driver.findElementByName("��ť2").click();  
+//        driver.findElementByName("2").click();  
 //          
 //        //driver.sendKeyEvent(AndroidKeyCode.BACK);  
 //    }  
@@ -162,7 +168,7 @@ public class loginTest {
     
 
     public static String getCurrentDateTime(){
-       SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");//设置日期格式
+       SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");
        return df.format(new Date());
     }
 }  
