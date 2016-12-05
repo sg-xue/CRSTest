@@ -21,22 +21,23 @@ import org.testng.annotations.Test;
   
 public class loginTest {  
     private AndroidDriver<?> driver;  
+    
   
     @BeforeSuite  
     public void beforeSuite() throws MalformedURLException {  
         // set up appium 
 //        File classpathRoot = new File(System.getProperty("user.dir"));  
 //        File appDir = new File(classpathRoot, "apps");  
-//        File app = new File(appDir, "AndroidApp.apk");// Òª²âÊÔµÄApp  
+//        File app = new File(appDir, "AndroidApp.apk");
         DesiredCapabilities capabilities = new DesiredCapabilities();  
         capabilities.setCapability("platformName", "Android");  
         capabilities.setCapability("deviceName", "79c1e852");  
         capabilities.setCapability("platformVersion", "4.3");
 //        capabilities.setCapability("app", app.getAbsolutePath());  
-        capabilities.setCapability("appPackage", "com.vivo.browser");// °üÃû  
+        capabilities.setCapability("appPackage", "com.vivo.browser");
         capabilities.setCapability("appActivity", ".MainActivity");  
-        capabilities.setCapability("unicodeKeyboard", "True"); // ÊäÈëÖÐÎÄ  
-        capabilities.setCapability("resetKeyboard", "True");  
+//        capabilities.setCapability("unicodeKeyboard", "True"); 
+//        capabilities.setCapability("resetKeyboard", "True");  
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"),  
                 capabilities);  
     }  
@@ -53,14 +54,15 @@ public class loginTest {
   
     @AfterMethod  
     public void afterMethod() throws Exception {  
-        System.out.println("afterMethod");  
-        driver.quit();
+        System.out.println("afterMethod"); 
     }  
   
     @Test  
     public void testLogin() throws Exception {  
-        System.out.println("mainTest");  
-        // ´ò¿ªÒ³Ãæ 
+        
+        ExcelUtils excelData;
+        
+        // ï¿½ï¿½Ò³ï¿½ï¿½ 
         driver.findElementById("com.vivo.browser:id/search_text").click();  
         WebElement search_box = driver.findElement(By.id("com.vivo.browser:id/edit"));
         search_box.sendKeys("crs-ui.dianhua.dev");
@@ -68,19 +70,28 @@ public class loginTest {
         driver.findElementById("com.vivo.browser:id/go").click();
         sleep(5);
         
-        //ÊäÈëºÅÂë
+        //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         driver.context("WEBVIEW_com.vivo.browser");
         WebElement tel_num = driver.findElementById("tel");
-        tel_num.sendKeys("13294396470");
-//        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS); 
-        sleep(5);
-        WebElement pin_pwd = driver.findElementById("input_pin_pwd");
-        sleep(5);
-        pin_pwd.sendKeys("074693");
-        sleep(5);
-//        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
+        long num, pwd = 0;
+        int RowNum = 6;
+        int ColNum = 4;
+        try {
+			excelData = new ExcelUtils("simInfo.xlsx","Sheet1");
+			num = excelData.getCellDataasnumber(RowNum, ColNum);
+			tel_num.sendKeys(String.valueOf(num));
+			sleep(5);
+	        WebElement pin_pwd = driver.findElementById("input_pin_pwd");
+	        sleep(5);
+	        pwd = excelData.getCellDataasnumber(RowNum, ColNum+2);
+	        pin_pwd.sendKeys(String.valueOf(pwd));
+	        sleep(5);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+        
         driver.findElementById("p1_submit").click();
-        sleep(5);
+        sleep(20);
 //        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 //        driver.switch_to.context("WEBVIEW_com.vivo.browser")
 //                print self.driver.context
@@ -89,16 +100,16 @@ public class loginTest {
 //                sleep(3)
 //                self.driver.switch_to.context("NATIVE_APP")
         
-//        Assert.assertEquals("µã»÷´ÎÊý:" + i, result);  
-//        // µÈ´ý  
+//        Assert.assertEquals("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½:" + i, result);  
+//        // ï¿½È´ï¿½  
 //        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);  
-//        // Í¨¹ý¿Ø¼þÀàÐÍ»ñÈ¡¿Ø¼þÁÐ±í  
+//        // Í¨ï¿½ï¿½ï¿½Ø¼ï¿½ï¿½ï¿½ï¿½Í»ï¿½È¡ï¿½Ø¼ï¿½ï¿½Ð±ï¿½  
 //        List<WebElement> textFieldsList = driver  
 //                .findElementsByClassName("android.widget.EditText");  
 //        textFieldsList.get(0).sendKeys("123456789");  
 //        // driver.findElementById("et").sendKeys("123456789");  
 //        driver.manage().timeouts().implicitlyWait(30, TimeUnit.SECONDS);  
-//        driver.findElementByName("Ìø×ª").click();  
+//        driver.findElementByName("ï¿½ï¿½×ª").click();  
     }  
   
 //    @Test  
@@ -106,7 +117,7 @@ public class loginTest {
 //        System.out.println("anotherTest");  
 //        String result = driver.findElementById("another_tv").getText();  
 //        //Assert.assertEquals("1234567890", result);  
-//        driver.findElementByName("°´Å¥2").click();  
+//        driver.findElementByName("ï¿½ï¿½Å¥2").click();  
 //          
 //        //driver.sendKeyEvent(AndroidKeyCode.BACK);  
 //    }  

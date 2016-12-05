@@ -57,17 +57,17 @@ public class ExcelUtils
     
  
   //This method to get the data and get the value as number.
-    public double getCellDataasnumber(int RowNum, int ColNum) throws Exception
+    public long getCellDataasnumber(int RowNum, int ColNum) throws Exception
     {
 	   try
 	   {
-		  double CellData = ExcelWSheet.getRow(RowNum).getCell(ColNum).getNumericCellValue();
+		  long CellData = (long) ExcelWSheet.getRow(RowNum).getCell(ColNum).getNumericCellValue();
 		  System.out.println("The value of CellData " + CellData);
 		  return CellData;
 		}
 		catch (Exception e)
 		{
-			return 000.00;
+			return 0;
 		}
     }
 }
