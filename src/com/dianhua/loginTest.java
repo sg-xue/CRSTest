@@ -2,26 +2,36 @@ package com.dianhua;
 
 import io.appium.java_client.android.AndroidDriver;  
 //import io.appium.java_client.android.AndroidKeyCode;  
-  
+
+import java.io.File;
+import java.io.IOException;
 //import java.io.File;  
 import java.net.MalformedURLException;  
-import java.net.URL;  
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 //import java.util.List;  
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.OutputType;
+import org.openqa.selenium.TakesScreenshot;
+import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;  
-import org.openqa.selenium.remote.DesiredCapabilities;  
+import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.testng.Assert;  
 import org.testng.annotations.AfterMethod;  
 import org.testng.annotations.AfterSuite;  
 import org.testng.annotations.BeforeMethod;  
 import org.testng.annotations.BeforeSuite;  
-import org.testng.annotations.Test;  
+import org.testng.annotations.Test;
+
   
 public class loginTest {  
     private AndroidDriver<?> driver;  
-    
+    long num, pwd = 0;
   
     @BeforeSuite  
     public void beforeSuite() throws MalformedURLException {  
@@ -68,30 +78,50 @@ public class loginTest {
         search_box.sendKeys("crs-ui.dianhua.dev");
         sleep(3);
         driver.findElementById("com.vivo.browser:id/go").click();
-        sleep(5);
+        sleep(2);
         
         //�������
         driver.context("WEBVIEW_com.vivo.browser");
         WebElement tel_num = driver.findElementById("tel");
-        long num, pwd = 0;
-        int RowNum = 6;
+        int RowNum = 31;
         int ColNum = 4;
         try {
 			excelData = new ExcelUtils("simInfo.xlsx","Sheet1");
 			num = excelData.getCellDataasnumber(RowNum, ColNum);
 			tel_num.sendKeys(String.valueOf(num));
-			sleep(5);
+			sleep(2);
 	        WebElement pin_pwd = driver.findElementById("input_pin_pwd");
-	        sleep(5);
+	        sleep(2);
 	        pwd = excelData.getCellDataasnumber(RowNum, ColNum+2);
 	        pin_pwd.sendKeys(String.valueOf(pwd));
-	        sleep(5);
+//	        sleep(5);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-        
+        ExpectedConditions.elementToBeClickable(driver.findElementById("p1_submit"));
         driver.findElementById("p1_submit").click();
+        driver.context("NATIVE_APP");
+//        sleep(3);
+//        WebElement frame=driver.findElementById("com.vivo.browser:id/parentPanel");
+//        driver.switchTo().frame(frame);
+//        if (driver.findElementById("com.vivo.browser:id/parentPanel") != null) {
+//        	driver.findElementById("com.vivo.browser:id/button1").click();
+//        }
+//        driver.switchTo().defaultContent();
         sleep(20);
+        File scrFile = driver.getScreenshotAs(OutputType.FILE);
+        try {
+        	FileUtils.copyFile(scrFile, new File(num + "-" + getCurrentDateTime()+ ".png")); 
+        } catch (IOException e) {
+            System.out.println("Can't save screenshot!");
+            e.printStackTrace();
+        }
+        
+        driver.context("WEBVIEW_com.vivo.browser");
+//        Assert.assertNotNull(driver.findElementsByClassName("td_num"));
+        Assert.assertNotNull(driver.findElementByXPath("//*[@id='p_index']/table/thead/tr/td[4])"));
+//      *[@id="p_index"]/table/thead/tr/td[4]
+        sleep(3);
 //        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 //        driver.switch_to.context("WEBVIEW_com.vivo.browser")
 //                print self.driver.context
@@ -128,5 +158,11 @@ public class loginTest {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
+    }
+    
+
+    public static String getCurrentDateTime(){
+       SimpleDateFormat df = new SimpleDateFormat("yyyyMMdd_HHmmss");//设置日期格式
+       return df.format(new Date());
     }
 }  
