@@ -10,18 +10,11 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Set;
-//import java.util.List;  
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;  
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -48,8 +41,10 @@ public class loginTest {
         capabilities.setCapability("deviceName", "79c1e852");  
         capabilities.setCapability("platformVersion", "4.3");
 //        capabilities.setCapability("app", app.getAbsolutePath());  
-        capabilities.setCapability("appPackage", "com.vivo.browser");
-        capabilities.setCapability("appActivity", ".MainActivity");  
+//        capabilities.setCapability("appPackage", "com.vivo.browser");
+//        capabilities.setCapability("appActivity", ".MainActivity");  
+        capabilities.setCapability("appPackage", "com.android.chrome");
+        capabilities.setCapability("appActivity", "com.google.android.apps.chrome.Main"); 
 //        capabilities.setCapability("unicodeKeyboard", "True"); 
 //        capabilities.setCapability("resetKeyboard", "True");  
         driver = new AndroidDriver(new URL("http://127.0.0.1:4723/wd/hub"),  
@@ -76,15 +71,17 @@ public class loginTest {
         
         ExcelUtils excelData;
         
-        //  
-        driver.findElementById("com.vivo.browser:id/search_text").click();  
-        WebElement search_box = driver.findElement(By.id("com.vivo.browser:id/edit"));
-        search_box.sendKeys("crs-ui.dianhua.dev");
-        sleep(3);
-        driver.findElementById("com.vivo.browser:id/go").click();
+//        driver.findElementById("com.vivo.browser:id/search_text").click();  
+        driver.findElementById("com.android.chrome:id/url_bar").sendKeys("crs-ui.dianhua.dev" + "\n");
+//        driver.findElementById("com.android.chrome:id/search_box_text").sendKeys("crs-ui.dianhua.dev" + "\n");
+//        WebElement search_box = driver.findElement(By.id("com.vivo.browser:id/edit"));
+//        search_box.sendKeys("crs-ui.dianhua.dev");
+        sleep(1);
+//        driver.findElementById("com.android.chrome:id/url_bar").sendKeys(Keys.ENTER);
+//        driver.findElementById("com.vivo.browser:id/go").click();
         sleep(2);
         
-        //
+/*
         driver.context("WEBVIEW_com.vivo.browser");
         WebElement tel_num = driver.findElementById("tel");
         int RowNum = 31;
@@ -108,8 +105,8 @@ public class loginTest {
 //        driver.switchTo().defaultContent();
         sleep(3);
 
-        
-        driver.switchTo().frame("content");
+
+        driver.switchTo().frame(0);
         if (driver.findElementById("com.vivo.browser:id/parentPanel") != null) {
         	driver.findElementById("com.vivo.browser:id/button1").click();
         }
@@ -128,6 +125,8 @@ public class loginTest {
         Assert.assertNotNull(driver.findElementByXPath("//*[@id='p_index']/table/thead/tr/td[4])"));
 //      *[@id="p_index"]/table/thead/tr/td[4]
         sleep(3);
+        
+        */
 //        driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
 //        driver.switch_to.context("WEBVIEW_com.vivo.browser")
 //                print self.driver.context
