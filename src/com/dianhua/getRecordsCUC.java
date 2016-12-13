@@ -3,18 +3,14 @@ package com.dianhua;
 import static org.testng.Assert.fail;
 
 import java.io.BufferedReader;
-import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.TimeUnit;
 
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.Alert;
 import org.openqa.selenium.By;
-import org.openqa.selenium.NoAlertPresentException;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.OutputType;
-import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.firefox.FirefoxDriver;
@@ -23,112 +19,59 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
+import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions; 
 
-public class getRecordsCMCC {
+public class getRecordsCUC {
   private WebDriver driver;
   private String baseUrl;
-  private boolean acceptNextAlert = true;
   private StringBuffer verificationErrors = new StringBuffer();
-  long num, pwd = 0;
   ExcelUtils excelData;
   MysqlUtility sqlUtility = new MysqlUtility();
   String recordPhone = "";
   String startTime = "";
   String callType = "";
   String talkTime = "";
-  String cityName = "";
   protected WebDriverWait wait;
-//  String toastMsg = "服务器繁忙，请稍后再试";
-  int RowNum = 1;
-  int ColNum = 4;
-  int totalNumber = 18;
 
   @BeforeClass(alwaysRun = true)
   public void setUp() throws Exception {
 	System.setProperty("webdriver.gecko.driver", "/usr/local/share/geckodriver");
     driver = new FirefoxDriver();
+    driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);  
     baseUrl = "http://crs-ui.dianhua.dev";
     wait=new WebDriverWait(driver, 60);
   }
+  
+  @DataProvider(name="simCard")
+  public static Object[][] data() throws IOException  
+  {  
+      return getSearchData("CUC-SIM-Info.csv");
+  } 
 
-  @Test
-  public void testWebdriver() throws Exception {
-    
-	  excelData = new ExcelUtils("/home/yulore/workspace/CRSTest/simInfo.xlsx","Sheet1");
-	  
-	  
-    //get toast message
-//    WebElement element = wait.until(ExpectedConditions.presenceOfElementLocated((By.partialLinkText(toastMsg))));
-    while (RowNum < totalNumber) {
+  @Test(dataProvider="simCard")  
+  public void testWebdriver(String city, String num, String pwd) throws Exception {
     	driver.get(baseUrl + "/");
         new WebDriverWait(driver, 5).until(
         	    ExpectedConditions.presenceOfElementLocated(By.id("tel"))
         	);
         
-        
         WebElement tel_num = driver.findElement(By.id("tel"));
     	tel_num.click();
     	try {
-    		num = excelData.getCellDataasnumber(RowNum, ColNum);
-    		tel_num.sendKeys(String.valueOf(num));
+    		System.out.printf("城市：　%s，电话: %s \n", city, num);
+    		tel_num.sendKeys(num);
     		Thread.sleep(3000);
             WebElement pin_pwd = driver.findElement(By.id("input_pin_pwd"));
-            pwd = excelData.getCellDataasnumber(RowNum, ColNum+2);
             pin_pwd.click();
-            pin_pwd.sendKeys(String.valueOf(pwd));
-            
-            WebElement smsCode = driver.findElement(By.id("sms_code"));
-            //get sms code from message
-            
-            try{  
-                System.out.println("Python script start \n");  
-                Process pr = Runtime.getRuntime().exec("python /home/yulore/PycharmProjects/appiumDemo/getCodeFromSMS.py");  
-                  
-                BufferedReader in = new BufferedReader(new  
-                        InputStreamReader(pr.getInputStream()));  
-                String line;  
-                if ((line = in.readLine()) != null) {  
-                    System.out.println(line);  
-                }  
-                in.close();  
-                pr.waitFor();  
-                System.out.println("Python script finish \n");  
-        } catch (Exception e){  
-                    e.printStackTrace();  
-                }
-            
-            smsCode.click();
-            smsCode.sendKeys(String.valueOf("321"));
-            
-            try {
-            	wait.until(ExpectedConditions.elementToBeClickable(By.id("p1_submit")));
-            	driver.findElement(By.id("p1_submit")).click();
-            }catch(Exception e){
-            	System.out.println("can't login \n");
-            	RowNum++;
-            	continue;
-            }
+            pin_pwd.sendKeys(pwd);
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("p1_submit")));
+            driver.findElement(By.id("p1_submit")).click();
             
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	try {
-    		WebElement result = (new WebDriverWait( driver, 60)).until(
-        	  	    new ExpectedCondition< WebElement>(){
-        	  	        public WebElement apply( WebDriver d) {
-        	  	            return d.findElement(By.className("td_num"));
-        	  	        }
-        	  	    }
-        	  	);
-    	}catch(Exception e){
-    		System.out.println("No records found \n");
-        	RowNum++;
-        	continue;
-    	}
-    	
+    	wait.until(ExpectedConditions.elementToBeSelected(By.className("td_num")));
     	
     	WebElement table = driver.findElement(By.tagName("table"));  
         List<WebElement> rows = table.findElements(By.tagName("tr"));  
@@ -155,22 +98,13 @@ public class getRecordsCMCC {
                 startTime = resultArray[1];
                 callType = resultArray[2];
                 talkTime = resultArray[3];
-                cityName = excelData.getCellDataasstring(RowNum, 0);
-                System.out.println("city is: " + cityName + "\n");
                 if (recordPhone != "") {
-                	sqlUtility.updateSQL(String.valueOf(num), recordPhone, startTime, callType, talkTime, cityName);
+                	sqlUtility.updateSQL(String.valueOf(num), recordPhone, startTime, callType, talkTime, city);
                 	Thread.sleep(3000);
                 }
                 
             }
         }
-        RowNum++;
-    }
-    
-//    if(result != null) {
-//    	takeScreenShot(driver, String.valueOf(num));
-//    	Thread.sleep(3000);
-//    }
     
   }
 
@@ -216,18 +150,30 @@ public class getRecordsCMCC {
     }
   }
   ***/
-  public void takeScreenShot(WebDriver driver, String name){
-	  File output = null;
-	  File file;
-	  output = ((TakesScreenshot) driver)
-	                  .getScreenshotAs(OutputType.FILE);
-	  file = new File(name + ".png");
-	  try {
-	      FileUtils.copyFile(output, file);
-	  } catch (IOException e) {
-	      e.printStackTrace();
-	  }
-	}
+  
+  public static Object[][] getSearchData(String FileNameroot) throws IOException{  
+      List<Object[]> records=new ArrayList<Object[]>();  
+      String record;  
+      //设定UTF-8字符集，使用带缓冲区的字符输入流BufferedReader读取文件内容  
+      BufferedReader file=new BufferedReader(new InputStreamReader(new FileInputStream(FileNameroot),"UTF-8"));  
+      //忽略读取CSV文件的标题行（第一行）  
+      file.readLine();  
+      //遍历读取文件中除第一行外的其他所有内容并存储在名为records的ArrayList中，每一行records中存储的对象为一个String数组  
+      while((record=file.readLine())!=null){  
+          String fields[]=record.split(",");  
+          records.add(fields);  
+      }  
+      //关闭文件对象  
+      file.close();  
+      //将存储测试数据的List转换为一个Object的二维数组  
+      Object[][] results=new Object[records.size()][];  
+      //设置二位数组每行的值，每行是一个Object对象  
+      for(int i=0;i<records.size();i++){  
+          results[i]=records.get(i);  
+      }  
+      return results;       
+  }
+
 
 }
 
