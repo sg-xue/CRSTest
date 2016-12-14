@@ -23,20 +23,12 @@ import org.python.google.common.base.Verify;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
-import org.testng.annotations.Optional;
-import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
-public class getRecordsCUC {
+public class TempTest {
   private WebDriver driver;
   private String baseUrl;
   private StringBuffer verificationErrors = new StringBuffer();
-  ExcelUtils excelData;
-//  MysqlUtility sqlUtility = new MysqlUtility();
-//  String recordPhone = "";
-//  String startTime = "";
-//  String callType = "";
-//  String talkTime = "";
   boolean morePages = false;
   protected WebDriverWait wait;
 
@@ -45,7 +37,7 @@ public class getRecordsCUC {
 	System.setProperty("webdriver.gecko.driver", "/usr/local/share/geckodriver");
     driver = new FirefoxDriver();
     driver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);  
-    baseUrl = "http://crs-ui.dianhua.dev";
+    baseUrl = "http://www.baidu.com";
     wait=new WebDriverWait(driver, 60);
   }
   
@@ -54,103 +46,49 @@ public class getRecordsCUC {
   {  
       return getSearchData("CUC-SIM-Info.csv");
   } 
-
-//  @Parameters({"city","num","pwd"})
-//  public void testWebdriver(@Optional("北京") String city, @Optional("18612012053")String num, @Optional("900319")String pwd) throws Exception {
-  @Test (dataProvider="simCard") 
-  public void testWebdriver(String city, String num, String pwd) throws Exception {
+  
+  @Test
+  public void testWebdriver() throws Exception {
     	driver.get(baseUrl + "/");
         new WebDriverWait(driver, 5).until(
-        	    ExpectedConditions.presenceOfElementLocated(By.id("tel"))
+        	    ExpectedConditions.presenceOfElementLocated(By.id("kw"))
         	);
         
-        WebElement tel_num = driver.findElement(By.id("tel"));
+        WebElement tel_num = driver.findElement(By.id("kw"));
     	tel_num.click();
     	try {
-    		System.out.printf("城市：　%s，电话: %s \n", city, num);
-    		tel_num.sendKeys(num);
+    		tel_num.sendKeys("testng");
     		Thread.sleep(3000);
-            WebElement pin_pwd = driver.findElement(By.id("input_pin_pwd"));
-            pin_pwd.click();
-            pin_pwd.sendKeys(pwd);
-            wait.until(ExpectedConditions.elementToBeClickable(By.id("p1_submit")));
-            driver.findElement(By.id("p1_submit")).click();
+            wait.until(ExpectedConditions.elementToBeClickable(By.id("su")));
+            driver.findElement(By.id("su")).click();
             
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	System.out.println("start deal with result table");
-    	saveRecords(driver, city, num);
-//    	wait.until(ExpectedConditions.elementToBeSelected(By.tagName("tbody")));
-//    	try {
-//    		WebElement result = (new WebDriverWait( driver, 60)).until(
-//        	  	    new ExpectedCondition< WebElement>(){
-//        	  	        public WebElement apply( WebDriver d) {
-//        	  	            return d.findElement(By.className("td_num"));
-//        	  	        }
-//        	  	    }
-//        	  	);
-//    	}catch(Exception e){
-//    		System.out.println("No records found \n");
-//    	}
-//    	//get records and save to DB
-//    	WebElement table = driver.findElement(By.tagName("table"));  
-//        List<WebElement> rows = table.findElements(By.tagName("tr"));  
-//        //check if there is a phone record
-//        System.out.printf("Total number of records %d\n", rows.size());
-//        if (rows.size() < 2) {
-//        	System.out.println("No records returned");
-//        } else {
-//        	String[] resultArray = {"","","",""};
-//            boolean firstRow = true;
-//            for(WebElement row:rows){
-//                List<WebElement> cols= row.findElements(By.tagName("td"));  
-//                if(firstRow == true) {
-//                	firstRow = false;
-//                	continue;
-//                }
-//                int i = 0;
-//                for(WebElement col:cols){  
-//                    System.out.print(col.getText()+"\t");    
-//                    resultArray[i] = col.getText();
-//                    i++;
-//                }
-//                System.out.println();
-//                recordPhone = resultArray[0];
-//                startTime = resultArray[1];
-//                callType = resultArray[2];
-//                talkTime = resultArray[3];
-//                if (recordPhone != "") {
-//                	sqlUtility.updateSQL(String.valueOf(num), recordPhone, startTime, callType, talkTime, city);
-//                	Thread.sleep(3000);
-//                }
-//                
-//            }
-//        }
-        
         //check if there are more records on other page
-        WebElement secPage = driver.findElement(By.partialLinkText("2"));
-        System.out.println("partialLinkText pages: "+secPage.getText());
-        List<WebElement> hrefs = driver.findElement(By.xpath("//a[contains(@href, 'page_no')]"));
+        List<WebElement> hrefs = driver.findElements(By.xpath("//a[contains(@href, '/s?wd=testng&pn=')]"));
         System.out.println("Total page is: " + hrefs.size());
         int nextPage = 1;
+        
+//        System.out.println("xpath pages: "+h.getText());
+//    	System.out.println("get href value: "+h.getAttribute("href"));
+//    	Pattern pattern =  Pattern.compile("(\\D+)(\\d+)(.*)");
+//		Matcher match = pattern.matcher(h.getAttribute("href"));
+//		if(match.find()){
+//			System.out.println(match.group(2));
+//		}else{
+//			System.out.println("pattern not find");
+//		}
         for(WebElement h:hrefs) {
-        	System.out.println("xpath pages: "+h.getText());
-        	System.out.println("get href value: "+h.getAttribute("href"));
-        	Pattern pattern =  Pattern.compile("/calls.+page_no=(.+)");
-    		Matcher match = pattern.matcher(h.getAttribute("href"));
-    		if(match.find()){
-    			System.out.println(match.group(1));
-    		}else{
-    			System.out.println("pattern not find");
-    		}
+        	
     		if (nextPage < hrefs.size()) {
-    			driver.findElement(By.linkText(match.group(1))).click();
-    			saveRecords(driver, city, num);
+//    			driver.findElement(By.linkText(h.getText())).click();
+    			System.out.println("print page number: " + h.getText());
+    			nextPage++;
+//    			Thread.sleep(3000);
     		}
+    		
         }
-//        secPage.click();
-        Thread.sleep(3000);
     
   }
 
@@ -269,4 +207,5 @@ public class getRecordsCUC {
       }
   }
 }
+
 
