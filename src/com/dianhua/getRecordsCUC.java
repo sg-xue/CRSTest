@@ -9,6 +9,8 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
@@ -20,6 +22,8 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
+import org.testng.annotations.Optional;
+import org.testng.annotations.Parameters;
 import org.testng.annotations.Test;
 
 public class getRecordsCUC {
@@ -32,6 +36,7 @@ public class getRecordsCUC {
   String startTime = "";
   String callType = "";
   String talkTime = "";
+  boolean morePages = false;
   protected WebDriverWait wait;
 
   @BeforeClass(alwaysRun = true)
@@ -49,7 +54,9 @@ public class getRecordsCUC {
       return getSearchData("CUC-SIM-Info.csv");
   } 
 
-  @Test(dataProvider="simCard")  
+//  @Parameters({"city","num","pwd"})
+//  public void testWebdriver(@Optional("北京") String city, @Optional("18612012053")String num, @Optional("900319")String pwd) throws Exception {
+  @Test (dataProvider="simCard") 
   public void testWebdriver(String city, String num, String pwd) throws Exception {
     	driver.get(baseUrl + "/");
         new WebDriverWait(driver, 5).until(
@@ -71,8 +78,20 @@ public class getRecordsCUC {
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	wait.until(ExpectedConditions.elementToBeSelected(By.className("td_num")));
-    	
+    	System.out.println("start deal with result table");
+//    	wait.until(ExpectedConditions.elementToBeSelected(By.tagName("tbody")));
+    	try {
+    		WebElement result = (new WebDriverWait( driver, 60)).until(
+        	  	    new ExpectedCondition< WebElement>(){
+        	  	        public WebElement apply( WebDriver d) {
+        	  	            return d.findElement(By.className("td_num"));
+        	  	        }
+        	  	    }
+        	  	);
+    	}catch(Exception e){
+    		System.out.println("No records found \n");
+    	}
+    	//get records and save to DB
     	WebElement table = driver.findElement(By.tagName("table"));  
         List<WebElement> rows = table.findElements(By.tagName("tr"));  
         //check if there is a phone record
@@ -94,6 +113,7 @@ public class getRecordsCUC {
                     resultArray[i] = col.getText();
                     i++;
                 }
+                System.out.println();
                 recordPhone = resultArray[0];
                 startTime = resultArray[1];
                 callType = resultArray[2];
@@ -105,6 +125,29 @@ public class getRecordsCUC {
                 
             }
         }
+        
+        //check if there are more records on other page
+        WebElement secPage = driver.findElement(By.partialLinkText("2"));
+        System.out.println("partialLinkText pages: "+secPage.getText());
+        List<WebElement> hrefs = driver.findElement(By.xpath("//a[contains(@href, 'page_no')]"));
+        System.out.println("Total page is: " + hrefs.size());
+        int nextPage = 1;
+        for(WebElement h:hrefs) {
+        	System.out.println("xpath pages: "+h.getText());
+        	System.out.println("get href value: "+h.getAttribute("href"));
+        	Pattern pattern =  Pattern.compile("/calls.+page_no=(.+)");
+    		Matcher match = pattern.matcher(h.getAttribute("href"));
+    		if(match.find()){
+    			System.out.println(match.group(1));
+    		}else{
+    			System.out.println("pattern not find");
+    		}
+    		if (nextPage < hrefs.size()) {
+    			driver.findElement(By.linkText(match.group(1))).click();;
+    		}
+        }
+//        secPage.click();
+        Thread.sleep(3000);
     
   }
 
@@ -154,7 +197,6 @@ public class getRecordsCUC {
   public static Object[][] getSearchData(String FileNameroot) throws IOException{  
       List<Object[]> records=new ArrayList<Object[]>();  
       String record;  
-      //设定UTF-8字符集，使用带缓冲区的字符输入流BufferedReader读取文件内容  
       BufferedReader file=new BufferedReader(new InputStreamReader(new FileInputStream(FileNameroot),"UTF-8"));  
       //忽略读取CSV文件的标题行（第一行）  
       file.readLine();  
