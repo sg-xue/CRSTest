@@ -6,7 +6,10 @@ import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
@@ -32,13 +35,11 @@ public class getRecordsCUC {
   private String baseUrl;
   private StringBuffer verificationErrors = new StringBuffer();
   ExcelUtils excelData;
-//  MysqlUtility sqlUtility = new MysqlUtility();
-//  String recordPhone = "";
-//  String startTime = "";
-//  String callType = "";
-//  String talkTime = "";
   boolean morePages = false;
   protected WebDriverWait wait;
+  static SimpleDateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");//设置日期格式
+  static String beginTime, midTime = df.format(new Date());
+  static boolean recordsTime;
 
   @BeforeClass(alwaysRun = true)
   public void setUp() throws Exception {
@@ -56,10 +57,15 @@ public class getRecordsCUC {
   } 
 
 //  @Parameters({"city","num","pwd"})
+//  @Test
 //  public void testWebdriver(@Optional("北京") String city, @Optional("18612012053")String num, @Optional("900319")String pwd) throws Exception {
   @Test (dataProvider="simCard") 
   public void testWebdriver(String city, String num, String pwd) throws Exception {
-    	driver.get(baseUrl + "/");
+	  
+	  beginTime = df.format(new Date());
+	  recordsTime = true;
+	  
+	  driver.get(baseUrl + "/");
         new WebDriverWait(driver, 5).until(
         	    ExpectedConditions.presenceOfElementLocated(By.id("tel"))
         	);
@@ -74,83 +80,16 @@ public class getRecordsCUC {
             pin_pwd.click();
             pin_pwd.sendKeys(pwd);
             wait.until(ExpectedConditions.elementToBeClickable(By.id("p1_submit")));
+            String tempTime = df.format(new Date());
+            midTime = diffTime(beginTime, tempTime);
+//            System.out.println("The mid time is: " + midTime);
             driver.findElement(By.id("p1_submit")).click();
             
     	} catch (Exception e) {
     		e.printStackTrace();
     	}
-    	System.out.println("start deal with result table");
+    	
     	saveRecords(driver, city, num);
-//    	wait.until(ExpectedConditions.elementToBeSelected(By.tagName("tbody")));
-//    	try {
-//    		WebElement result = (new WebDriverWait( driver, 60)).until(
-//        	  	    new ExpectedCondition< WebElement>(){
-//        	  	        public WebElement apply( WebDriver d) {
-//        	  	            return d.findElement(By.className("td_num"));
-//        	  	        }
-//        	  	    }
-//        	  	);
-//    	}catch(Exception e){
-//    		System.out.println("No records found \n");
-//    	}
-//    	//get records and save to DB
-//    	WebElement table = driver.findElement(By.tagName("table"));  
-//        List<WebElement> rows = table.findElements(By.tagName("tr"));  
-//        //check if there is a phone record
-//        System.out.printf("Total number of records %d\n", rows.size());
-//        if (rows.size() < 2) {
-//        	System.out.println("No records returned");
-//        } else {
-//        	String[] resultArray = {"","","",""};
-//            boolean firstRow = true;
-//            for(WebElement row:rows){
-//                List<WebElement> cols= row.findElements(By.tagName("td"));  
-//                if(firstRow == true) {
-//                	firstRow = false;
-//                	continue;
-//                }
-//                int i = 0;
-//                for(WebElement col:cols){  
-//                    System.out.print(col.getText()+"\t");    
-//                    resultArray[i] = col.getText();
-//                    i++;
-//                }
-//                System.out.println();
-//                recordPhone = resultArray[0];
-//                startTime = resultArray[1];
-//                callType = resultArray[2];
-//                talkTime = resultArray[3];
-//                if (recordPhone != "") {
-//                	sqlUtility.updateSQL(String.valueOf(num), recordPhone, startTime, callType, talkTime, city);
-//                	Thread.sleep(3000);
-//                }
-//                
-//            }
-//        }
-        
-        //check if there are more records on other page
-        WebElement secPage = driver.findElement(By.partialLinkText("2"));
-        System.out.println("partialLinkText pages: "+secPage.getText());
-        List<WebElement> hrefs = driver.findElement(By.xpath("//a[contains(@href, 'page_no')]"));
-        System.out.println("Total page is: " + hrefs.size());
-        int nextPage = 1;
-        for(WebElement h:hrefs) {
-        	System.out.println("xpath pages: "+h.getText());
-        	System.out.println("get href value: "+h.getAttribute("href"));
-        	Pattern pattern =  Pattern.compile("/calls.+page_no=(.+)");
-    		Matcher match = pattern.matcher(h.getAttribute("href"));
-    		if(match.find()){
-    			System.out.println(match.group(1));
-    		}else{
-    			System.out.println("pattern not find");
-    		}
-    		if (nextPage < hrefs.size()) {
-    			driver.findElement(By.linkText(match.group(1))).click();
-    			saveRecords(driver, city, num);
-    		}
-        }
-//        secPage.click();
-        Thread.sleep(3000);
     
   }
 
@@ -219,33 +158,55 @@ public class getRecordsCUC {
       return results;       
   }
 
-  public static void saveRecords(WebDriver driver, String city, String num) {
+  public static String diffTime(String startTime, String endTime) throws ParseException {
+	  java.util.Date now = df.parse(endTime);
+	  java.util.Date date=df.parse(startTime);
+	  long tempTime =now.getTime()-date.getTime();
+	  long day = tempTime /(24*60*60*1000);
+	  long hour = (tempTime/(60*60*1000)-day*24);
+	  long min = ((tempTime/(60*1000))-day*24*60-hour*60);
+	  long second = (tempTime/1000-day*24*60*60-hour*60*60-min*60);
+	  String timeDiff = "" + hour + "小时" + min +"分" + second + "秒";
+	  System.out.println(""+day+"天"+hour+"小时"+min+"分"+second+"秒");
+	  return timeDiff;
+  }
+  
+  public static void saveRecords(WebDriver driver, String city, String num) throws InterruptedException, ParseException {
 	  String recordPhone, startTime, callType, talkTime = "";
 	  MysqlUtility sqlUtility = new MysqlUtility();
 	  try {
-  		WebElement result = (new WebDriverWait( driver, 60)).until(
-      	  	    new ExpectedCondition< WebElement>(){
-      	  	        public WebElement apply( WebDriver d) {
-      	  	            return d.findElement(By.className("td_num"));
-      	  	        }
-      	  	    }
-      	  	);
-  		Verify.verifyNotNull(result);
-  	}catch(Exception e){
-  		System.out.println("No records found \n");
-  	}
-  	//get records and save to DB
-  	WebElement table = driver.findElement(By.tagName("table"));  
+    		WebElement result = (new WebDriverWait( driver, 60)).until(
+        	  	    new ExpectedCondition< WebElement>(){
+        	  	        public WebElement apply( WebDriver d) {
+        	  	            return d.findElement(By.className("td_num"));
+        	  	        }
+        	  	    }
+        	  	);
+    		Verify.verifyNotNull(result);
+      }catch(Exception e){
+    	  System.out.println("No records found \n");
+      }
+	  // get the time spend to obtain records 
+	  if (recordsTime) {
+		  String tempTime = df.format(new Date());
+	      String getRecordTime = diffTime(beginTime, tempTime);
+	      System.out.println("Time spend to get records: " + getRecordTime);
+	      sqlUtility.updateRecordTimeSQL(String.valueOf(num), beginTime, midTime, getRecordTime,city);
+	      recordsTime = false;
+	  }
+  	  //get records and save to DB
+  	  WebElement table = driver.findElement(By.tagName("table"));  
       List<WebElement> rows = table.findElements(By.tagName("tr"));  
       //check if there is a phone record
-      System.out.printf("Total number of records %d\n", rows.size());
+//      System.out.printf("Total number of records %d\n", rows.size());
       if (rows.size() < 2) {
       	System.out.println("No records returned");
       } else {
-      	String[] resultArray = {"","","",""};
+      	  String[] resultArray = {"","","",""};
           boolean firstRow = true;
           for(WebElement row:rows){
               List<WebElement> cols= row.findElements(By.tagName("td"));  
+              //跳过表格的第一行
               if(firstRow == true) {
               	firstRow = false;
               	continue;
@@ -257,6 +218,7 @@ public class getRecordsCUC {
                   i++;
               }
               System.out.println();
+              //write record to DB
               recordPhone = resultArray[0];
               startTime = resultArray[1];
               callType = resultArray[2];
@@ -264,9 +226,32 @@ public class getRecordsCUC {
               if (recordPhone != "") {
               	sqlUtility.updateSQL(String.valueOf(num), recordPhone, startTime, callType, talkTime, city);
               }
-              
           }
       }
+      //check if there are more than one page records
+      try {
+  		WebElement morePages = (new WebDriverWait( driver, 5)).until(
+      	  	    new ExpectedCondition< WebElement>(){
+      	  	        public WebElement apply( WebDriver d) {
+      	  	            return d.findElement(By.xpath("//a[contains(@href, 'page_no')]"));
+      	  	        }
+      	  	    }
+      	  	);
+  		if (morePages != null) {
+  			List<WebElement> hrefs = driver.findElements(By.xpath("//a[contains(@href, 'page_no')]"));
+  			WebElement activePage = driver.findElement(By.className("active"));
+  			int currentPage = Integer.parseInt(activePage.getText());
+  			int totalPage = hrefs.size();
+  			if (currentPage < totalPage) {
+  				driver.findElement(By.partialLinkText(String.valueOf(currentPage+1))).click();
+  				Thread.sleep(3000);
+  				saveRecords(driver, city, num);
+  				Thread.sleep(3000);
+  			}
+  		}
+    }catch(Exception e){
+  	  System.out.println("No more records found \n");
+    }
   }
 }
 
