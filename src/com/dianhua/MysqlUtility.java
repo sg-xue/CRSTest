@@ -99,7 +99,7 @@ public class MysqlUtility {
  
     }
     
-    public void updateRecordTimeSQL(String tel, String testTime,String searchTime,String recordTime, String city){
+    public void updateRecordTimeSQL(String tel, String testTime,String searchTime,String recordTime){
         Connection conn = null;
         String sql;
         // MySQL的JDBC URL编写方式：jdbc:mysql://主机名称：连接端口/数据库的名称?参数=值
@@ -122,7 +122,7 @@ public class MysqlUtility {
             // Statement里面带有很多方法，比如executeUpdate可以实现插入，更新和删除等
             Statement stmt = conn.createStatement();
 //            sql = "create table student(NO char(20),name varchar(20),primary key(NO))";
-            sql = "insert into test_records(own_phone,test_time,search_time,getRecord_time,city) values (\'"+tel+"\',\'"+testTime+"\',\'"+searchTime+"\',\'"+recordTime+"\',\'"+city+"\')";
+            sql = "insert into test_records(own_phone,test_time,search_time,getRecord_time,city) values (\'"+tel+"\',\'"+testTime+"\',\'"+searchTime+"\',\'"+recordTime+"\')";
 //            System.out.println(sql);
             int result = stmt.executeUpdate(sql);// executeUpdate语句会返回一个受影响的行数，如果返回-1就没有成功
             //print result

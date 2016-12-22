@@ -191,7 +191,7 @@ public class getRecordsCUC {
 		  String tempTime = df.format(new Date());
 	      String getRecordTime = diffTime(beginTime, tempTime);
 	      System.out.println("Time spend to get records: " + getRecordTime);
-	      sqlUtility.updateRecordTimeSQL(String.valueOf(num), beginTime, midTime, getRecordTime,city);
+	      sqlUtility.updateRecordTimeSQL(String.valueOf(num), beginTime, midTime, getRecordTime);
 	      recordsTime = false;
 	  }
   	  //get records and save to DB
